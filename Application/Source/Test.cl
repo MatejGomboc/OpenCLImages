@@ -21,10 +21,7 @@ kernel void Test(read_only image2d_t input_image, write_only image2d_t output_im
 {
 	float4 input_pixel = read_imagef(input_image, sampler, (int2)(get_global_id(0), get_global_id(1)));
 
-	write_imagef(output_image, (int2)(get_global_id(0), get_global_id(1)), (float4)(
-		input_pixel.z, // R
-		input_pixel.x, // G
-		input_pixel.y, // B
-		1.0f  // A
-	));
+	float4 output_pixel = (float4)((float3)(length(input_pixel.xyz) / sqrt(3.0f), length(input_pixel.xyz) / sqrt(3.0f), length(input_pixel.xyz) / sqrt(3.0f)), 1.0f);
+
+	write_imagef(output_image, (int2)(get_global_id(0), get_global_id(1)), output_pixel);
 }

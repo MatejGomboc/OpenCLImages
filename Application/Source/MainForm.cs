@@ -103,7 +103,12 @@ namespace OpenCLImages
                 oclContext.Dispose();
                 return;
             }
-            
+
+#if DEBUG
+            MessageBox.Show(oclProgram.GetBuildLog(oclDevice),
+                    "OpenCL program build completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+#endif
+
             ComputeKernel oclKernel = oclProgram.CreateKernel("Test");
 
             Bitmap inBitmap = (Bitmap)this.splitContainer.Panel2.BackgroundImage;
