@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenCLImages", "Application\OpenCLImages.csproj", "{2169F31A-5A97-454F-A824-6E2D91354F4E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{656E96CE-2587-4CCC-A4DB-06D36267133A} = {656E96CE-2587-4CCC-A4DB-06D36267133A}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloo.VS2010", "Cloo\Cloo.VS2010.csproj", "{656E96CE-2587-4CCC-A4DB-06D36267133A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2169F31A-5A97-454F-A824-6E2D91354F4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2169F31A-5A97-454F-A824-6E2D91354F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2169F31A-5A97-454F-A824-6E2D91354F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2169F31A-5A97-454F-A824-6E2D91354F4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
