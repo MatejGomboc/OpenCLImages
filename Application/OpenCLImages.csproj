@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="Source\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\StarTracker.cs" />
     <EmbeddedResource Include="Source\Test.cl" />
   </ItemGroup>
   <ItemGroup>

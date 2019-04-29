@@ -17,25 +17,23 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text;
 using System.Windows.Forms;
-using Cloo;
 
 namespace OpenCLImages
 {
-    public partial class MainForm : Form
+    internal partial class MainForm : Form
     {
+        private StarTracker starTracker = null;
+
         public MainForm()
         {
             InitializeComponent();
 
-            foreach (ComputePlatform platform in ComputePlatform.Platforms)
+            starTracker = new StarTracker();
+
+            foreach (string device in starTracker.Devices)
             {
-                foreach (ComputeDevice device in platform.Devices)
-                {
-                    this.comboBoxDevices.Items.Add(device.Name.Trim());
-                }
+                this.comboBoxDevices.Items.Add(device);
             }
         }
 
@@ -49,10 +47,21 @@ namespace OpenCLImages
             openFileDialog.ValidateNames = true;
             openFileDialog.Title = "Select input image";
             openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*tif;*tiff;*gif;";
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                if (this.splitContainer.Panel2.BackgroundImage != null)
+                {
+                    this.splitContainer.Panel2.BackgroundImage.Dispose();
+                    this.splitContainer.Panel2.BackgroundImage = null;
+                }
                 this.splitContainer.Panel2.BackgroundImage = new Bitmap(openFileDialog.FileName);
             }
+        }
+
+        private void comboBoxDevices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            starTracker.SetDevice(comboBoxDevices.SelectedIndex);
         }
 
         private void buttonGenerate_Click(object sender, EventArgs e)
@@ -63,97 +72,18 @@ namespace OpenCLImages
                 return;
             }
 
-            ComputePlatform oclPlatform = null;
-            ComputeDevice oclDevice = null;
-
-            foreach (ComputePlatform platform in ComputePlatform.Platforms)
+            if (this.comboBoxDevices.SelectedIndex == -1)
             {
-                foreach (ComputeDevice device in platform.Devices)
-                {
-                    if (device.Name.Trim() == this.comboBoxDevices.Text)
-                    {
-                        oclPlatform = platform;
-                        oclDevice = device;
-                    }
-                }
-            }
-
-            if (oclDevice == null)
-            {
-                MessageBox.Show("Invalid OpenCL device.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No OpenCL device selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            ComputeContext oclContext = new ComputeContext(new ComputeDevice[] { oclDevice },
-                new ComputeContextPropertyList(oclPlatform), null, IntPtr.Zero);
+            Bitmap newImage = starTracker.ProcessImage((Bitmap)this.splitContainer.Panel2.BackgroundImage);
 
-            string oclSource = Encoding.Default.GetString(Properties.Resources.Test);
-            ComputeProgram oclProgram = new ComputeProgram(oclContext, oclSource);
+            this.splitContainer.Panel2.BackgroundImage.Dispose();
+            this.splitContainer.Panel2.BackgroundImage = null;
 
-            try
-            {
-                oclProgram.Build(new ComputeDevice[] { oclDevice }, "", null, IntPtr.Zero);
-            }
-            catch(ComputeException exception)
-            {
-                MessageBox.Show(exception.Message + "\n\n" + oclProgram.GetBuildLog(oclDevice),
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                oclProgram.Dispose();
-                oclContext.Dispose();
-                return;
-            }
-
-#if DEBUG
-            MessageBox.Show(oclProgram.GetBuildLog(oclDevice),
-                    "OpenCL program build completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-#endif
-
-            ComputeKernel oclKernel = oclProgram.CreateKernel("Test");
-
-            Bitmap inBitmap = (Bitmap)this.splitContainer.Panel2.BackgroundImage;
-
-            BitmapData inBmpData = inBitmap.LockBits(new Rectangle(0, 0, inBitmap.Width, inBitmap.Height),
-                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-            ComputeImage2D oclInImage = new ComputeImage2D(oclContext, ComputeMemoryFlags.ReadOnly |
-                ComputeMemoryFlags.CopyHostPointer,
-                new ComputeImageFormat(ComputeImageChannelOrder.Bgra, ComputeImageChannelType.UNormInt8),
-                inBitmap.Width, inBitmap.Height, 0, inBmpData.Scan0);
-
-            Bitmap outBitmap = new Bitmap(inBitmap.Width, inBitmap.Height, PixelFormat.Format32bppArgb);
-
-            BitmapData outBmpData = outBitmap.LockBits(new Rectangle(0, 0, outBitmap.Width, outBitmap.Height),
-                ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            ComputeImage2D oclOutImage = new ComputeImage2D(oclContext, ComputeMemoryFlags.WriteOnly |
-                ComputeMemoryFlags.CopyHostPointer,
-                new ComputeImageFormat(ComputeImageChannelOrder.Bgra, ComputeImageChannelType.UNormInt8),
-                outBitmap.Width, outBitmap.Height, 0, outBmpData.Scan0);
-
-            oclKernel.SetMemoryArgument(0, oclInImage);
-            oclKernel.SetMemoryArgument(1, oclOutImage);
-
-            ComputeCommandQueue oclCommandQueue = new ComputeCommandQueue(oclContext, oclDevice,
-                ComputeCommandQueueFlags.None);
-
-            oclCommandQueue.Execute(oclKernel, new long[] { 0, 0 },
-                new long[] { outBitmap.Width, outBitmap.Height },
-                null, null);
-            oclCommandQueue.Finish();
-
-            oclCommandQueue.ReadFromImage(oclOutImage, outBmpData.Scan0, true, null);
-
-            outBitmap.UnlockBits(outBmpData);
-
-            this.splitContainer.Panel2.BackgroundImage = outBitmap;
-
-            oclInImage.Dispose();
-            oclOutImage.Dispose();
-            oclCommandQueue.Dispose();
-            oclKernel.Dispose();
-            oclProgram.Dispose();
-            oclContext.Dispose();
+            this.splitContainer.Panel2.BackgroundImage = newImage;
         }
     }
 }
